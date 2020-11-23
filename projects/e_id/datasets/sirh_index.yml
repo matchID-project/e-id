@@ -1,0 +1,14 @@
+datasets:
+  sirh_index:
+    connector: elasticsearch
+    table: sirh
+    body:
+      settings:
+        index:
+          refresh_interval: 30s
+          number_of_replicas: 0
+      mappings:
+        dynamic: False
+        properties:
+          nom_prenom:
+            type: text

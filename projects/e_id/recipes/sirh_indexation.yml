@@ -1,0 +1,26 @@
+recipes:
+  sirh_indexation:
+    test_chunk_size: 10000
+    input: sirh
+    output: sirh_index
+    steps:
+      - exec:
+          - df['nom'] = np.where(((df['Nom usage'] == "") | (df['Nom usage'] == df['Nom de naissance'])), df['Nom de naissance'], df['Nom de naissance'] + " " + df['Nom usage'])
+          - df['prenom'] = np.where(((df['Prénom usage'] == "") | (df['Prénom usage'].str.normalize('NFKD').str.encode('ASCII','ignore').str.decode('ASCII') == df['Prénom de naissance'].str.normalize('NFKD').str.encode('ASCII','ignore').str.decode('ASCII'))), df['Prénom de naissance'], df['Prénom de naissance'] + " " + df['Prénom usage'])
+          - df['nom_prenom'] = df['nom'] + " " + df['prenom']
+          - df['nom_prenom'] = df['nom_prenom'].astype('str').str.lower()
+          - df['nom_prenom'] = df['nom_prenom'].astype('str').str.normalize('NFKD').str.encode('ASCII','ignore').str.decode('ASCII')
+          - df['nom'] = df['nom'].astype('str').str.lower()
+          - df['prenom'] = df['prenom'].astype('str').str.lower()
+      - exec: >
+          df['nom_prenom'] = df['nom_prenom'].astype('str').str.split(r'\s+').apply(lambda row: " ".join(sorted(list(set(row)))))
+      - normalize:
+          select: (nom|prenom|nom_prenom)$
+      - replace:
+          select: (nom|prenom|nom_prenom)$
+          regex:
+            - \W+: " "
+            - \s+: " "
+
+
+          

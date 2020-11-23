@@ -1,0 +1,7 @@
+datasets:
+  ldap:
+    connector: upload
+    table: Liste_Comptes_sans_matriculeRH_20201110.csv
+    type: csv
+    sep: ","
+    encoding: "utf8"

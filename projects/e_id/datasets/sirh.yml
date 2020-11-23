@@ -1,0 +1,7 @@
+datasets:
+  sirh:
+    connector: upload
+    table: Extraction_SIRH_20201112.csv
+    type: csv
+    sep: ";"
+    encoding: "utf8"

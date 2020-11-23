@@ -1,0 +1,56 @@
+recipes:
+  sirh_match:
+    test_chunk_size: 100
+    input: ldap
+    output: 
+      dataset: ldap_matched
+      thread_count: 1
+    steps:
+      - ldap_dataprep:
+      - join: 
+          type: elasticsearch
+          dataset: sirh_index
+          prefix: hit_
+          keep_unmatched: True
+          query:
+            size: 1
+            # pruning des petits scores
+            min_score: 10
+            query:
+              bool:
+                must:
+                  - match:
+                      nom_prenom:
+                        query: nom_prenom
+                        fuzziness: auto
+      - exec: >
+          df['score'] = np.where(
+            df['nom_prenom'] == df['hit_nom_prenom'],
+            1,
+            df.apply(lambda row: jw(row['nom_prenom'],row['hit_nom_prenom']), axis = 1)
+            )
+      - exec: >
+          df['score_nom'] = np.where(
+            df['score'] == 1, 1,
+            df.apply(lambda row: 
+              max(jw(row['nom'],row['hit_nom']),
+                  jw(row['sn'],row['hit_Nom usage']),
+                  jw(row['sn'],row['hit_Nom de naissance'])
+                  ), axis = 1)
+            )
+      - exec: >
+          df['score_prenom'] = np.where(
+            df['score'] == 1, 1,
+            df.apply(lambda row: jw(row['prenom'],row['hit_prenom']), axis = 1)
+            )
+      - exec: >
+          df['score'] = np.where(
+            df['score'] == 1,
+            1,
+            np.where(
+              (df['score_nom'] == 1) & (df['score_prenom'] == 1),
+              1,
+              ((df['score'] * df['score_nom'] * df['score_prenom']) ** (1/2)).round(2)
+              )
+            )
+            

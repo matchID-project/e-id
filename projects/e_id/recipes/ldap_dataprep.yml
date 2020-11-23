@@ -1,0 +1,30 @@
+recipes:
+  ldap_dataprep:
+    test_chunk_size: 200
+    input: ldap
+    output: replace_output
+    steps:
+      - map:
+          nom: mail
+          prenom: mail
+      - replace:
+          select: nom
+          regex:
+            - '.*\.(.*)@.*': '\1'
+      - replace:
+          select: prenom
+          regex:
+            - '(.*)\..*@.*': '\1'
+      - eval:
+          - nom: list(set([ x for x in [ normalize(nom.lower()), normalize(sn.lower()), normalize(nomNaissance.lower()) ] if x != ""]))
+          - prenom: list(set([ x for x in [ normalize(prenom.lower()), normalize(givenName.lower()), normalize(prenomUsage.lower()) ] if x != ""]))
+          - nom_prenom: nom + prenom
+      - replace:
+          select: (nom|prenom|nom_prenom)$
+          regex:
+            - \W+: " "
+            - \s+: " "
+      - eval:
+          - nom: str(" ").join(list(set(nom)))
+          - prenom: str(" ").join(list(set(prenom)))
+          - nom_prenom: str(" ").join(sorted(list(set(nom_prenom))))
