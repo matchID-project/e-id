@@ -12,3 +12,6 @@ datasets:
         properties:
           nom_prenom:
             type: text
+            fields:
+              keyword:
+                type: keyword

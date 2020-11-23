@@ -16,8 +16,10 @@ recipes:
           regex:
             - '(.*)\..*@.*': '\1'
       - eval:
-          - nom: list(set([ x for x in [ normalize(nom.lower()), normalize(sn.lower()), normalize(nomNaissance.lower()) ] if x != ""]))
-          - prenom: list(set([ x for x in [ normalize(prenom.lower()), normalize(givenName.lower()), normalize(prenomUsage.lower()) ] if x != ""]))
+          # - nom: list(set([ x for x in [ normalize(nom.lower()), normalize(sn.lower()), normalize(nomNaissance.lower()) ] if x != ""]))
+          #- prenom: list(set([ x for x in [ normalize(prenom.lower()), normalize(givenName.lower()), normalize(prenomUsage.lower()) ] if x != ""]))
+          - nom: list(set([ x for x in [ normalize(nom.lower()), normalize(sn.lower()) ] if x != ""]))
+          - prenom: list(set([ x for x in [ normalize(prenom.lower()), normalize(givenName.lower()) ] if x != ""]))
           - nom_prenom: nom + prenom
       - replace:
           select: (nom|prenom|nom_prenom)$

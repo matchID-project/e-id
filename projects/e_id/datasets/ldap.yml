@@ -1,7 +1,7 @@
 datasets:
   ldap:
     connector: upload
-    table: Liste_Comptes_sans_matriculeRH_20201110.csv
+    table: ExportALL_givenName20201123.csv
     type: csv
     sep: ","
-    encoding: "utf8"
+    encoding: "latin1"
