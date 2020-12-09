@@ -1,0 +1,7 @@
+datasets:
+  sirh_referentiel_positions_administratives_csv:
+    connector: upload
+    table: SIRH_positions.csv
+    type: csv
+    sep: ";"
+    encoding: "utf8"

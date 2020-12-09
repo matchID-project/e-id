@@ -1,26 +1,44 @@
 recipes:
   sirh_indexation:
-    test_chunk_size: 10000
+    test_chunk_size: 100
     input: sirh
     output: sirh_index
     steps:
-      - exec:
-          - df['nom'] = np.where(((df['Nom usage'] == "") | (df['Nom usage'] == df['Nom de naissance'])), df['Nom de naissance'], df['Nom de naissance'] + " " + df['Nom usage'])
-          - df['prenom'] = np.where(((df['Prénom usage'] == "") | (df['Prénom usage'].str.normalize('NFKD').str.encode('ASCII','ignore').str.decode('ASCII') == df['Prénom de naissance'].str.normalize('NFKD').str.encode('ASCII','ignore').str.decode('ASCII'))), df['Prénom de naissance'], df['Prénom de naissance'] + " " + df['Prénom usage'])
-          - df['nom_prenom'] = df['nom'] + " " + df['prenom']
-          - df['nom_prenom'] = df['nom_prenom'].astype('str').str.lower()
-          - df['nom_prenom'] = df['nom_prenom'].astype('str').str.normalize('NFKD').str.encode('ASCII','ignore').str.decode('ASCII')
-          - df['nom'] = df['nom'].astype('str').str.lower()
-          - df['prenom'] = df['prenom'].astype('str').str.lower()
-      - exec: >
-          df['nom_prenom'] = df['nom_prenom'].astype('str').str.split(r'\s+').apply(lambda row: " ".join(sorted(list(set(row)))))
+      - eval:
+          - prenom_mail: re.sub(r'\..*','',row['Adresse e-mail'])
+          - nom_mail: re.sub(r'.*\.(.*)@.*',r'\1',row['Adresse e-mail'])
+      - map:
+          prenoms: 
+            - Prénom
+            - Prénom us.
+            - prenom_mail
+            - Deux. prén
+            - Trois. pré
+            - Quatr. pré
+            - 5è prénom
+          noms:
+            - Nom
+            - Nom usage
+            - nom_mail
+          date: Né(e) le
+      - eval:
+          - nom: (nom_mail if nom_mail else row['Nom usage'] if row['Nom usage'] else Nom).lower()
+          - prenom: (prenom_mail if prenom_mail else row['Prénom us.'] if row['Prénom us.'] else Prénom).lower()
+          - lieu: row['Lieu de naissance'].lower()
       - normalize:
-          select: (nom|prenom|nom_prenom)$
+          select: (nom|prenom|lieu)$
       - replace:
-          select: (nom|prenom|nom_prenom)$
+          select: date
           regex:
-            - \W+: " "
-            - \s+: " "
+            - '(..)\.(..)\.(....)': '\3\2\1'
+      - eval:
+          - noms: list(set([normalize(n.lower()) for n in noms if n != ""]))
+          - prenoms: list(set([normalize(n.lower()) for n in prenoms if n != ""]))
+          - noms_prenoms: str(" ").join(noms + prenoms)
+          - nom_prenom: nom + " " + prenom
+          - uid: nom + ";" + prenom + ";" + date + ";" + lieu
 
+
+          
 
           

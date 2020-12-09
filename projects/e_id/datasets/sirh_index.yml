@@ -10,8 +10,16 @@ datasets:
       mappings:
         dynamic: False
         properties:
+          noms_prenoms:
+            type: text
           nom_prenom:
             type: text
             fields:
               keyword:
                 type: keyword
+          nom:
+            type: keyword
+          prenom:
+            type: keyword
+          UID:
+            type: keyword

@@ -13,35 +13,46 @@ recipes:
           prefix: hit_
           keep_unmatched: True
           query:
-            size: 1
+            size: 10
             # pruning des petits scores
             min_score: 10
             query:
               bool:
                 must:
                   - match:
-                      nom_prenom:
+                      noms_prenoms:
                         query: nom_prenom
                         fuzziness: auto
+                should:
+                  - term:
+                      nom: nom
+                  - term:
+                      prenom: prenom
+      - eval:
+          - hit_total: hit_total["value"]
       - exec: >
           df['score'] = np.where(
             df['nom_prenom'] == df['hit_nom_prenom'],
             1,
-            df.apply(lambda row: jw(row['nom_prenom'],row['hit_nom_prenom']), axis = 1)
+            df.apply(lambda row: max(jw(row['nom_prenom'],row['hit_noms_prenoms']),jw(row['nom_prenom'],row['hit_nom_prenom'])), axis = 1)
             )
       - exec: >
           df['score_nom'] = np.where(
             df['score'] == 1, 1,
             df.apply(lambda row: 
-              max(jw(row['nom'],row['hit_nom']),
+              max(jw(row['sn'],row['hit_nom_mail']),
                   jw(row['sn'],row['hit_Nom usage']),
-                  jw(row['sn'],row['hit_Nom de naissance'])
+                  jw(row['sn'],row['hit_Nom'])
                   ), axis = 1)
             )
       - exec: >
           df['score_prenom'] = np.where(
             df['score'] == 1, 1,
-            df.apply(lambda row: jw(row['prenom'],row['hit_prenom']), axis = 1)
+            df.apply(lambda row: 
+              max(jw(row['prenom'],row['hit_prenom']),
+                  jw(row['prenom'],row['hit_Prénom us.']),
+                  jw(row['prenom'],row['hit_prenoms'])
+                  ), axis = 1)
             )
       - exec: >
           df['score'] = np.where(
@@ -53,4 +64,19 @@ recipes:
               ((df['score'] * df['score_nom'] * df['score_prenom']) ** (1/2)).round(2)
               )
             )
-            
+      - groupby:
+          select: mail
+          transform:
+            - score: max
+            - score: min
+          rank:
+            - score
+      - exec: > 
+          df['score'] = np.where(
+            df['score_rank'] == 1,
+            df['score'],
+            df['score'].pow(1+df['score_rank']/2+df['hit_total']/5))
+      - keep:
+          select: .*
+          where: ((score_rank == 1) and (score > 0.15)) or (score > 0.5)
+       

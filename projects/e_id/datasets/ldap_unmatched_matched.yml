@@ -1,0 +1,7 @@
+datasets:
+  ldap_matched:
+    connector: upload
+    table: ldap_unmatched_matched.csv
+    type: csv
+    sep: ","
+    encoding: "utf8"

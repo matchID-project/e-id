@@ -1,7 +1,7 @@
 datasets:
-  sirh:
+  sirh_status_ref:
     connector: upload
-    table: SIRH_Extraction_Harmonie_20201125.csv
+    table: SIRH_status_ref.csv
     type: csv
     sep: ";"
     encoding: "utf8"
