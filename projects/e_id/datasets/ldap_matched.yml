@@ -1,7 +1,24 @@
 datasets:
   ldap_matched:
-    connector: upload
-    table: ldap_matched.csv
-    type: csv
-    sep: ","
-    encoding: "utf8"
+    connector: elasticsearch
+    table: sirx_x_ldap
+    body:
+      mappings:
+        dynamic: False
+        properties:
+          mail:
+            type: text
+          igcId:
+            type: keyword
+          hit_uid:
+            type: keyword
+          nom:
+            type: keyword
+          prenom:
+            type: keyword
+          hit_uid:
+            type: keyword
+          mail:
+            type: keyword
+          siteDescription:
+            enabled: False

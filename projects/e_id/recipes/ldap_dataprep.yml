@@ -2,7 +2,7 @@ recipes:
   ldap_dataprep:
     test_chunk_size: 200
     input: ldap
-    output: replace_output
+    output: ldap_match_filter
     steps:
       - map:
           nom: mail

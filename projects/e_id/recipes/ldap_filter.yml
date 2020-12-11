@@ -1,8 +1,0 @@
-recipes:
-  ldap_filter:
-    test_chunk_size: 10000
-    input: ldap_matched
-    output: replace_output
-    steps:
-      - keep:
-          select: .*
